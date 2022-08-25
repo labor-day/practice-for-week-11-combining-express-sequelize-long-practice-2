@@ -14,7 +14,10 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   Tree.init({
-    tree: DataTypes.STRING,
+    tree: {
+      type:DataTypes.STRING,
+      unique: true
+    },
     location: DataTypes.STRING,
     heightFt: {
       type: DataTypes.FLOAT,
