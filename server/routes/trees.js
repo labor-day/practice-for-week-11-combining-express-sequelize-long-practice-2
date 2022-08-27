@@ -250,7 +250,7 @@ router.put('/:id', async (req, res, next) => {
     } catch(err) {
         next({
             status: "error",
-            message: 'Could not update new tree',
+            message: 'Could not update tree',
             details: err.errors ? err.errors.map(item => item.message).join(', ') : err.message
         });
     }
@@ -273,7 +273,7 @@ router.get('/search/:value', async (req, res, next) => {
     trees = await Tree.findAll({
         where: {
             tree: {
-                [Op.like]: req.params.value
+                [Op.like]: `%${req.params.value}%`
             }
         },
         attributes: ['heightFt', 'tree', 'id'],
