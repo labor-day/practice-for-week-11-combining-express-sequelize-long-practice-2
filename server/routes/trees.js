@@ -14,7 +14,6 @@ const { Tree } = require('../db/models');
  **/
 // Your code here
 const { Op } = require("sequelize");
-const tree = require('../db/models/tree');
 
 /**
  * BASIC PHASE 1, Step B - List of all trees in the database

@@ -103,6 +103,129 @@ router.get('/insects-trees', async (req, res, next) => {
  *   - (Any others you think of)
  */
 // Your code here
+router.post('/associate-tree-insect', async (req, res, next) => {
+
+    //handle tree
+    //if there is no tree object in the body
+    if (!req.body.tree) {
+        next({
+            status: "error",
+            message: 'tree missing in request',
+            details: err.errors ? err.errors.map(item => item.message).join(', ') : err.message
+        });
+    }
+
+    //if we do have a tree object, try to find the tree by id, or create one
+    let tree;
+
+    if (req.body.tree.id) {
+        try {
+            tree = await Tree.findByPk(req.body.tree.id);
+            if (!tree) {
+                next({
+                    status: 'not-found',
+                    message: `Could not find tree ${req.body.tree.id}.`,
+                    details: 'Tree not found'
+                });
+            }
+        } catch(err) {
+            next({
+                status: "error",
+                message: `Could not find tree ${req.body.tree.id}.`,
+                details: err.errors ? err.errors.map(item => item.message).join(', ') : err.message
+            });
+        }
+    } else { //if there is no id in the body, create a tree
+        try {
+            tree = Tree.build();
+            if (req.body.tree.name) {tree.tree = req.body.tree.name}
+            if (req.body.tree.location) {tree.location = req.body.tree.location}
+            if (req.body.tree.height) {tree.heightFt = req.body.tree.height}
+            if (req.body.tree.size) {tree.groundCircumferenceFt = req.body.tree.size}
+
+            await tree.validate();
+            await tree.save();
+
+        } catch(err) {
+            next({
+                status: "error",
+                message: 'Could not create new tree',
+                details: err.errors ? err.errors.map(item => item.message).join(', ') : err.message
+            });
+        }
+    }
+
+
+    //handle insect
+    //if there is no insect object in the body
+    if (!req.body.insect) {
+        next({
+            status: "error",
+            message: 'insect missing in request',
+            details: err.errors ? err.errors.map(item => item.message).join(', ') : err.message
+        });
+    }
+
+    //if we do have a insect object, try to find the insect by id, or create one
+    let insect;
+
+    if (req.body.insect.id) {
+        try {
+            insect = await Insect.findByPk(req.body.insect.id);
+            if (!insect) {
+                next({
+                    status: 'not-found',
+                    message: `Could not find insect ${req.body.insect.id}.`,
+                    details: 'insect not found'
+                });
+            }
+        } catch(err) {
+            next({
+                status: "error",
+                message: `Could not find insect ${req.body.insect.id}.`,
+                details: err.errors ? err.errors.map(item => item.message).join(', ') : err.message
+            });
+        }
+    } else { //if there is no id in the body, create a tree
+        try {
+            insect = Insect.build();
+            if (req.body.insect.name) {insect.name = req.body.insect.name}
+            if (req.body.insect.description) {insect.description = req.body.insect.description}
+            if (req.body.insect.fact) {insect.fact = req.body.insect.fact}
+            if (req.body.insect.territory) {insect.territory = req.body.insect.territory}
+            if (req.body.insect.millimeters) {insect.millimeters = req.body.insect.millimeters}
+
+            await insect.validate();
+            await insect.save();
+
+        } catch(err) {
+            next({
+                status: "error",
+                message: 'Could not create new insect',
+                details: err.errors ? err.errors.map(item => item.message).join(', ') : err.message
+            });
+        }
+    }
+
+    //check if association exists
+    if (await tree.hasInsect(insect)) {
+        next({
+            status: "error",
+            message: `Association already exists between ${tree.tree} and ${insect.name}`,
+        });
+    }
+
+
+    //create the association
+    await tree.addInsects([insect]);
+
+    //respond
+    res.json({
+        status: 'success',
+        message: 'Successfully created association',
+        data: {tree: tree, insect: insect}
+    });
+});
 
 // Export class - DO NOT MODIFY
 module.exports = router;
